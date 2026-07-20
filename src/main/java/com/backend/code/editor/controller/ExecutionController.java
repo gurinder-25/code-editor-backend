@@ -16,7 +16,10 @@ public class ExecutionController {
     @PostMapping("execute")
     public ResponseEntity<ExecuteResponse> execute(@Valid @RequestBody ExecuteRequest executeRequest) {
         ExecuteResponse fake = ExecuteResponse.success(
-                "echo: " + executeRequest.code(), "", 0, 0);
+                executeRequest.code(),
+                "",
+                0,
+                0);
                 return ResponseEntity.ok(fake);
     }
 }
