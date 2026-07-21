@@ -1,11 +1,13 @@
 package com.backend.code.editor.request;
 
+import com.backend.code.editor.language.Language;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record ExecuteRequest(
-        @NotBlank(message = "language is required (e.g. java, python, javascript, c, cpp")
-        String language,
+        @NotNull(message = "language is required (e.g. java, python, javascript, c, cpp)")
+        Language language,
 
         @NotBlank(message = "code is required")
         @Size(max = 100_000, message = "code must be at most 100000 characters")
