@@ -21,11 +21,11 @@ public class LanguageRegistry {
                     "Main.java",
                     "javac -d /tmp /code/Main.java && java -cp /tmp Main"),
             Language.C, new LanguageConfig(
-                    "codeeditor-gcc:alpine",
+                    "gcc:13-bookworm",
                     "main.c",
                     "gcc /code/main.c -o /tmp/main && /tmp/main"),
             Language.CPP, new LanguageConfig(
-                    "codeeditor-gcc:alpine",
+                    "gcc:13-bookworm",
                     "main.cpp",
                     "g++ /code/main.cpp -o /tmp/main && /tmp/main")
     );

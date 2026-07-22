@@ -2,6 +2,7 @@ package com.backend.code.editor.controller;
 
 import com.backend.code.editor.request.ExecuteRequest;
 import com.backend.code.editor.response.ExecuteResponse;
+import com.backend.code.editor.service.CodeExecutionService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,13 +14,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1")
 public class ExecutionController {
 
+    private final CodeExecutionService codeExecutionService;
+
+    public ExecutionController(CodeExecutionService codeExecutionService) {
+        this.codeExecutionService = codeExecutionService;
+    }
+
     @PostMapping("execute")
     public ResponseEntity<ExecuteResponse> execute(@Valid @RequestBody ExecuteRequest executeRequest) {
-        ExecuteResponse fake = ExecuteResponse.success(
-                executeRequest.code(),
-                "",
-                0,
-                0);
-                return ResponseEntity.ok(fake);
+        return ResponseEntity.ok(codeExecutionService.execute(executeRequest));
     }
 }
