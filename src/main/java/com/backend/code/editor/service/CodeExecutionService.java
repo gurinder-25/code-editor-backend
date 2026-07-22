@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -23,8 +24,10 @@ public class CodeExecutionService {
 
     private static final long TIMEOUT_SECONDS = 10;
     private static final int MAX_OUTPUT_BYTES = 1_048_576;
+    private static final int MAX_CONCURRENT_EXECUTIONS = 2;
 
     private final LanguageRegistry languageRegistry;
+    private final Semaphore executionSlots = new Semaphore(MAX_CONCURRENT_EXECUTIONS);
 
     public CodeExecutionService(LanguageRegistry languageRegistry) {
         this.languageRegistry = languageRegistry;
@@ -34,6 +37,15 @@ public class CodeExecutionService {
         LanguageConfig config = languageRegistry.get(request.language());
         Path workDir = createWorkDir(config, request.code());
         long start = System.currentTimeMillis();
+
+        try {
+            executionSlots.acquire();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            cleanup(workDir);
+            throw new ExecutionFailedException("Execution was interrupted while waiting for a free slot", e);
+        }
+
         try {
             Process process = startContainer(config, workDir);
             writeStdin(process, request.stdin());
@@ -58,6 +70,7 @@ public class CodeExecutionService {
             Thread.currentThread().interrupt();
             throw new ExecutionFailedException("Execution was interrupted", e);
         } finally {
+            executionSlots.release();
             cleanup(workDir);
         }
     }
