@@ -11,6 +11,6 @@ public enum Language {
 
     @JsonCreator
     public static Language fromValue(String value) {
-        return Language.valueOf(value.trim().toUpperCase());
+        return Language.valueOf(value);
     }
 }
