@@ -5,6 +5,7 @@ import com.backend.code.editor.language.LanguageConfig;
 import com.backend.code.editor.language.LanguageRegistry;
 import com.backend.code.editor.request.ExecuteRequest;
 import com.backend.code.editor.response.ExecuteResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 
@@ -27,10 +28,13 @@ public class CodeExecutionService {
     private static final int MAX_CONCURRENT_EXECUTIONS = 2;
 
     private final LanguageRegistry languageRegistry;
+    private final String workDirBase;
     private final Semaphore executionSlots = new Semaphore(MAX_CONCURRENT_EXECUTIONS);
 
-    public CodeExecutionService(LanguageRegistry languageRegistry) {
+    public CodeExecutionService(LanguageRegistry languageRegistry,
+                                 @Value("${executor.work-dir:}") String workDirBase) {
         this.languageRegistry = languageRegistry;
+        this.workDirBase = workDirBase;
     }
 
     public ExecuteResponse execute(ExecuteRequest request) {
@@ -77,7 +81,13 @@ public class CodeExecutionService {
 
     private Path createWorkDir(LanguageConfig config, String code) {
         try {
-            Path dir = Files.createTempDirectory("code-exec-");
+            Path dir;
+            if (workDirBase == null || workDirBase.isBlank()) {
+                dir = Files.createTempDirectory("code-exec-");
+            } else {
+                Path base = Files.createDirectories(Path.of(workDirBase));
+                dir = Files.createTempDirectory(base, "code-exec-");
+            }
             Files.writeString(dir.resolve(config.fileName()), code, StandardCharsets.UTF_8);
             return dir;
         } catch (IOException e) {
