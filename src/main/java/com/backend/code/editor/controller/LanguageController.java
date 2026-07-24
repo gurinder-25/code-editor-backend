@@ -1,9 +1,12 @@
 package com.backend.code.editor.controller;
 
+import com.backend.code.editor.language.CodeSnippetRegistry;
 import com.backend.code.editor.language.Language;
 import com.backend.code.editor.response.AvailableLanguagesResponse;
+import com.backend.code.editor.response.CodeSnippetResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -13,8 +16,19 @@ import java.util.List;
 @RequestMapping("/api/v1/languages")
 public class LanguageController {
 
+    private final CodeSnippetRegistry codeSnippetRegistry;
+
+    public LanguageController(CodeSnippetRegistry codeSnippetRegistry) {
+        this.codeSnippetRegistry = codeSnippetRegistry;
+    }
+
     @GetMapping("")
     public ResponseEntity<AvailableLanguagesResponse> listLanguages() {
         return ResponseEntity.ok(new AvailableLanguagesResponse(List.of(Language.values())));
+    }
+
+    @GetMapping("code-snippet/{language}")
+    public ResponseEntity<CodeSnippetResponse> getCodeSnippet(@PathVariable Language language) {
+        return ResponseEntity.ok(new CodeSnippetResponse(codeSnippetRegistry.get(language)));
     }
 }
